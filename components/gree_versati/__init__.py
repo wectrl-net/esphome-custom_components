@@ -1,5 +1,5 @@
 import esphome.codegen as cg
-from esphome.components import modbus_controller
+from esphome.components import modbus_controller, number, select, text_sensor, sensor
 from esphome import config_validation as cv
 from esphome.const import CONF_ID
 
