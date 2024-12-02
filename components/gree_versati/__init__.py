@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 from esphome.components import modbus_controller
 from esphome import config_validation as cv
-from esphome.const import CONF_ID  # Import CONF_ID here
+from esphome.const import CONF_ID
 
 gree_versati_ns = cg.esphome_ns.namespace("gree_versati")
 GreeVersati = gree_versati_ns.class_("GreeVersati", cg.Component)
