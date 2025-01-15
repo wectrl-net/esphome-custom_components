@@ -1,6 +1,5 @@
- #pragma once
+#pragma once
 
-#include "esphome.h"
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/components/text_sensor/text_sensor.h"
@@ -9,8 +8,9 @@
 namespace esphome {
 namespace uart_read_line_sensor {
 
-class UartReadLineSensor : public Component, public uart::UARTDevice, public text_sensor::TextSensor {
+class UartReadLineSensor : public Component, public text_sensor::TextSensor {
  public:
+  void set_uart_parent(uart::UARTComponent *parent) { uart_parent_ = parent; }
   void set_privacy_switch(switch_::Switch *privacy_switch) { privacy_switch_ = privacy_switch; }
 
   void setup() override {
@@ -20,7 +20,7 @@ class UartReadLineSensor : public Component, public uart::UARTDevice, public tex
   void process_message(const std::string &message) {
     if (message == "GET_STATE") {
       bool state = privacy_switch_->state;
-      this->write_str(("STATE:" + std::string(state ? "ON" : "OFF") + "\n").c_str());
+      uart_parent_->write_str(("STATE:" + std::string(state ? "ON" : "OFF") + "\n").c_str());
     } else if (message.find("ACK:") != std::string::npos) {
       if (message == "ACK:ON" && !privacy_switch_->state) {
         privacy_switch_->turn_on();
@@ -60,8 +60,8 @@ class UartReadLineSensor : public Component, public uart::UARTDevice, public tex
   void loop() override {
     const int max_line_length = 80;
     static char buffer[max_line_length];
-    while (available()) {
-      if(readline(read(), buffer, max_line_length) > 0) {
+    while (uart_parent_->available()) {
+      if(readline(uart_parent_->read(), buffer, max_line_length) > 0) {
         std::string message = buffer;
         publish_state(message);
         process_message(message);
@@ -70,6 +70,7 @@ class UartReadLineSensor : public Component, public uart::UARTDevice, public tex
   }
 
  private:
+  uart::UARTComponent *uart_parent_{nullptr};
   switch_::Switch *privacy_switch_{nullptr};
 };
 
